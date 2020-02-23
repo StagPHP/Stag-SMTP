@@ -10,8 +10,7 @@ class stag_smtp{
   private $headers;
   private $body;
 
-  function __construct($data){
-    $this->mail_handler   = SMC_MAIL_HANDLER;
+  function __construct(){
     $this->from_name      = SMC_FROM_NAME;
     $this->from_email     = SMC_FROM_EMAIL;
     $this->reply_to_name  = SMC_REPLY_TO_NAME;
@@ -24,11 +23,10 @@ class stag_smtp{
   function send_mail($data){
     $to = $data['to'];
     $subject = $data['subject'];
-    $is_html_email = $data['html-email'];
 
-    if($is_html_email){
+    if(isset($data['html-email']) && $data['html-email']){
       $is_html_email = TRUE;
-      $message_body = compose_html_email(
+      $message_body = $this->compose_html_email(
         $data['template-loc'],
         $data['template-data']
       );
@@ -50,10 +48,15 @@ class stag_smtp{
       if(isset($data['attachment-type']))
       $mime_type = $data['attachment-type'];
 
-      $this->attach_attachment($attachment_field_name, $mime_type);
-    }     
+      $this->attach_attachment($data['attachment-field-name'], $mime_type);
+    }
 
-    return $this->send_mail_using_php($to, $subject);
+    /** Result of email */
+    $result = mail($to, $subject, $this->body, $this->headers); 
+
+    if(TRUE === $result) return TRUE;
+
+    return FALSE;
   }
 
   private function compose_email_head(){
@@ -90,7 +93,6 @@ class stag_smtp{
       $this->body .= $encoded_content;
       $this->body .= "--".$this->boundary."\r\n";
     }
-    else var_dump($result);
   }
 
   private function get_attachment_content($field_name, $mime_type){
@@ -157,9 +159,9 @@ class stag_smtp{
 
     /** Get Content Variable And Substitute */
     foreach($data_set as $key => $value)
-    $html_template_content = preg_replace("/((\{\{)".$key."(\}\}))/m", $value, $template_text);
+    $html_template_content = preg_replace("/((\{\{)".$key."(\}\}))/m", $value, $html_template_content);
 
     // Return HTML template Content
-    return chunk_split(base64_encode($html_template_content));
+    return $html_template_content;
   }
 }

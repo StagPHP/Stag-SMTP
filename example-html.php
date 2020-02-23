@@ -11,16 +11,22 @@ if(isset($_POST['message'])){
 
   $stag_smtp = new stag_smtp;
 
+  $test = 'Test Email From Development Form';
+
   $result = $stag_smtp->send_mail(array(
     'to' => 'developergkindia@gmail.com',
-    'subject' => 'Test Email From Development Form',
-    'email-body' => $_POST['message'],
-    'attachment-field-name' => 'attachment'
+    'subject' => $test,
+    'html-email' => TRUE,
+    'template-loc' => dirname(__FILE__).'/template.html',
+    'template-data' => array(
+      'title' => $test,
+      'heading' => $test,
+      'content' => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.'
+    )
   ));
 } ?>
 
 <form enctype="multipart/form-data" method="POST" action=""> 
 	<label>Message <textarea name="message"></textarea> </label>
-  <label>Attachment <input type="file" name="attachment" /></label>
 	<label><input type="submit" name="button" value="Submit" /></label> 
 </form>
